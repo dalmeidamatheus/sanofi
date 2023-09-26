@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html>
 
 <head>
@@ -17,7 +17,7 @@
     </nav>
 
     <div id="loading">Carregando Resultado...</div>
-    <input type="text" id="principio-json" value="{'BUTILBROMETO DE ESCOPOLAMINA': '10'}" style="display: none;">
+    <input type="text" id="principio-json" value="{{ principio|safe }}" style="display: none;">
     <div id="result"></div>
     <table id="input-table" style="display: none;">
         <tr>
@@ -32,58 +32,72 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $("#loading").show();
-            $("#result").empty();
+    $(document).ready(function () {
+        $("#loading").show();
+        $("#result").empty();
 
-            var principioJSON = $("#principio-json").val().replace(/'/g, '"');
-            var input_json = JSON.parse(principioJSON);
+        var principioJSON = $("#principio-json").val().replace(/'/g, '"');
+        var input_json = JSON.parse(principioJSON);
 
-            function populateInputTable(data) {
-                var table = $("#input-table");
-                table.empty();
-                table.append("<tr><th colspan='2'>Valor(es) enviado(s)</th></tr>");
-                table.append("<tr><th>Principio</th><th>Concentração (MG)</th></tr>");
-                for (var key in data) {
-                    table.append("<tr><td>" + key + "</td><td>" + data[key] + "</td></tr>");
-                }
-                table.show();
+        function populateInputTable(data) {
+            var table = $("#input-table");
+            table.empty();
+            table.append("<tr><th colspan='2'>Valor(es) enviado(s)</th></tr>");
+            table.append("<tr><th>Principio</th><th>Concentração (MG)</th></tr>");
+            for (var key in data) {
+                var medicamento = data[key];
+                var principio = Object.keys(medicamento)[0];
+                var concentracao = medicamento[principio];
+                table.append("<tr><td>" + principio + "</td><td>" + concentracao + "</td></tr>");
             }
+            table.show();
+        }
 
-            populateInputTable(input_json);
+        populateInputTable(input_json);
 
-            $.ajax({
-                type: 'POST',
-                url: '/buscas/encontrar_medicamento_view/',
-                data: { 'input_json': JSON.stringify(input_json) },
-                success: function (data) {
-                    $("#loading").hide();
+        $.ajax({
+    type: 'POST',
+    url: '/buscas/encontrar_medicamento_view/',
+    data: { 'input_json': JSON.stringify(input_json) },
+    success: function (data) {
+        $("#loading").hide();
 
-                    if (data.result === "Nenhum resultado encontrado.") {
-                        $("#result").text(data.result);
-                    } else if (Array.isArray(data.result)) {
-                        var resultList = "<h3>Medicamento(s) próximo(s) aos dados informados:</h3><h4>Obs: Em ordem de aproximação (mais parecido para o menos parecido)</h4><ul>";
-                        data.result.forEach(function (item) {
-                            resultList += "<li>" + item + "</li>";
-                        });
-                        resultList += "</ul>";
-                        $("#result").html(resultList);
+        if (data.result === "Nenhum resultado encontrado.") {
+            $("#result").text(data.result);
+        } else if (typeof data.result === "object") {
+            var resultList = "<h3>Medicamento(s) próximo(s) aos dados informados:</h3><h4>Obs: Em ordem de aproximação (mais parecido para o menos parecido)</h4><ul>";
+            for (var key in data.result) {
+                var medicamento = data.result[key];
+                resultList += "<li><strong>" + key + ":</strong><ul>";
+                for (var medicamentoKey in medicamento) {
+                    if (medicamentoKey === "APRESENTAÇÃO") {
+                        resultList += "<li>" + medicamentoKey + ": <ul>";
+                        var apresentacaoList = medicamento[medicamentoKey];
+                        for (var i = 0; i < apresentacaoList.length; i++) {
+                            resultList += "<li>" + apresentacaoList[i] + "</li>";
+                        }
+                        resultList += "</ul></li>";
                     } else {
-                        $("#result").text("Resultado desconhecido.");
+                        resultList += "<li>" + medicamentoKey + ": " + medicamento[medicamentoKey] + "</li>";
                     }
-                },
-                error: function () {
-                    $("#loading").hide();
-                    $("#result").text('Erro ao buscar medicamento.');
-                    $("#result").addClass('error-message');
                 }
-            });
+                resultList += "</ul></li>";
+            }
+            resultList += "</ul>";
+            $("#result").html(resultList);
+        } else {
+            $("#result").text("Resultado desconhecido.");
+        }
+    },
+    error: function () {
+        $("#loading").hide();
+        $("#result").text('Erro ao buscar medicamento.');
+        $("#result").addClass('error-message');
+    }
+});
 
-            $("#retornar").click(function () {
-                window.location.href = "/";
-            });
-        });
-    </script>
+    });
+</script>
 </body>
 
 </html>
