@@ -3,22 +3,103 @@
     align-items: center;
     margin-bottom: 10px;
     justify-content: center;
-    align-items: center; } 
+    align-items: center
+} 
 
-select { margin-right: 10px; }
-input { margin-right: 10px; }
-button { margin-right: 10px; }
-body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; }
-.navbar { background-color: #cde3fa; color: #fff; } 
-.navbar-brand { font-weight: bold; font-size: 30px; } 
-#adicionar, .remover { background: none; border: none; cursor: pointer; transition: transform 0.2s ease-in-out; } 
-#adicionar:hover, .remover:hover { transform: scale(1.2); } 
-#adicionar i, .remover i { font-size: 20px; } 
-#adicionar:hover span, .remover:hover span { display: inline; } 
-#adicionar span, .remover span { display: none; margin-left: 10px; } 
-.botao-enviar { background-color: #ffc107; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer; transition: background-color 0.2s ease-in-out; } 
-.botao-enviar:hover { background-color: #ffdb58; } 
-.botao-enviar i { margin-left: 5px; } 
-.input-custom { width: 20%; height: 100%; border: 1px solid #ccc; border-radius: 5px; font-family: Arial, sans-serif; font-size: 15px; } 
-.select-custom { width: 60%; height: 100%; border: 1px solid #ccc; border-radius: 5px; font-family: Arial, sans-serif; font-size: 15px; } 
-.input-custom::placeholder { color: #999; font-style: italic; }
+select { 
+    margin-right: 10px
+}
+
+input { 
+    margin-right: 10px
+}
+
+button { 
+    margin-right: 10px
+}
+
+body { 
+    font-family: Arial, sans-serif; background-color: #f8f9fa;
+    margin: 0;
+    padding: 0
+}
+
+.navbar { 
+    background-color: #cde3fa;
+    color: #fff
+} 
+
+.navbar-brand { 
+    font-weight: bold;
+    font-size: 30px 
+} 
+
+#adicionar, .remover {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out
+} 
+
+#adicionar:hover, .remover:hover { 
+    transform: scale(1.2)
+} 
+
+#adicionar i, .remover i { 
+    font-size: 20px
+} 
+
+#adicionar:hover span, .remover:hover span { 
+    display: inline
+} 
+
+#adicionar span, .remover span { 
+    display: none; margin-left: 10px
+} 
+
+.botao-enviar { 
+    background-color: #ffc107;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out
+} 
+
+.botao-enviar:hover { 
+    background-color: #ffdb58
+} 
+
+.botao-enviar i { 
+    margin-left: 5px
+} 
+
+.input-custom { 
+    width: 20%;
+    height: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: Arial, sans-serif; 
+    font-size: 15px
+} 
+
+.select-custom { 
+    width: 60%;
+    height: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px; 
+    font-family: Arial, sans-serif;
+    font-size: 15px
+} 
+
+.input-custom::placeholder { 
+    color: #999;
+    font-style: italic
+}
+
+input.campo {
+    width: 60%; 
+    max-width: 100%; 
+    font-size: 16px
+}
