@@ -6,26 +6,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css"> 
-    <style>
-        /* Adicionei estilos de exemplo para ilustrar a aparência dos dados fictícios */
-        .collapsible {
-            background-color: #f1f1f1;
-            cursor: pointer;
-            padding: 18px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 20px;
-        }
-
-        .content {
-            padding: 0 18px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.2s ease-out;
-        }
-    </style>
 </head>
 <body>
 
@@ -36,7 +16,7 @@
 </nav>
 
 <div id="loading" style="display: none;">Carregando Resultado...</div>
-<input type="text" id="principio-json" value="{'Buscopan': '10'}" style="display: none;">
+<input type="text" id="principio-json" value="{{principio|safe}}" style="display: none;">
 <div id="result"></div>
 <table id="input-table" style="display: none;">
     <tr>
@@ -48,57 +28,79 @@
     </tr>
 </table>
 <button id="retornar">Retornar à Página Inicial</button>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const loading = document.getElementById("loading");
-    const result = document.getElementById("result");
-    const principioJSON = document.getElementById("principio-json").value.replace(/'/g, '"');
-    const input_json = JSON.parse(principioJSON);
+    $("#loading").show();
+        $("#result").empty();
 
-    function populateInputTable(data) {
-        const table = document.getElementById("input-table");
+        var principioJSON = $("#principio-json").val().replace(/'/g, '"');
+        var input_json = JSON.parse(principioJSON);
+
+        function populateInputTable(data) {
+        var table = $("#input-table");
         table.style.display = "block";
-        table.innerHTML = `
-            <tr>
-                <th colspan='2'>Valor(es) enviado(s)</th>
-            </tr>
-            <tr>
-                <th>Principio</th>
-                <th>Concentração (MG)</th>
-            </tr>
-            <tr>
-                <td>${Object.keys(data)[0]}</td>
-                <td>${data[Object.keys(data)[0]]}</td>
-            </tr>
-        `;
+        table.empty();
+            table.append("<tr><th colspan='2'>Valor(es) enviado(s)</th></tr>");
+            table.append("<tr><th>Principio</th><th>Concentração (MG)</th></tr>");
+            for (var key in data) {
+                var medicamento = data[key];
+                var principio = Object.keys(medicamento)[0];
+                var concentracao = medicamento[principio];
+                table.append("<tr><td>" + principio + "</td><td>" + concentracao + "</td></tr>");
+            }
     }
 
     populateInputTable(input_json);
-    loading.style.display = "none";
+    $.ajax({
+    type: 'POST',
+    url: '/buscas/encontrar_medicamento_view/',
+    data: { 'input_json': JSON.stringify(input_json) },
+    success: function (data) {
+        $("#loading").hide();
+        if (data.result === "Nenhum resultado encontrado.") {
+            $("#result").text(data.result);
+        } else if (typeof data.result === "object") {
+            var resultList = "<h3>Medicamento(s) próximo(s) aos dados informados:</h3><h4>Obs: Em ordem de aproximação (mais parecido para o menos parecido)</h4><ul>";
+            for (var key in data.result) {
+                var medicamento = data.result[key];
+                resultList += "<li><strong>" + key + ":</strong><ul>";
+                for (var medicamentoKey in medicamento) {
+                    if (medicamentoKey === "APRESENTAÇÃO") {
+                        resultList += "<li>" + medicamentoKey + ": <ul>";
+                        var apresentacaoList = medicamento[medicamentoKey];
+                        for (var i = 0; i < apresentacaoList.length; i++) {
+                            resultList += "<li>" + apresentacaoList[i] + "</li>";
+                        }
+                        resultList += "</ul></li>";
+                    } else {
+                        resultList += "<li>" + medicamentoKey + ": " + medicamento[medicamentoKey] + "</li>";
+                    }
+                }
+                resultList += "</ul></li>";
+            }
+            resultList += "</ul>";
+            $("#result").html(resultList);
+        } else {
+            $("#result").text("Resultado desconhecido.");
+        }
+    },
+    error: function () {
+        $("#loading").hide();
+        $("#result").text('Erro ao buscar medicamento.');
+        $("#result").addClass('error-message');
+    }
+});
 
-    const resultList = document.createElement("ul");
-    resultList.innerHTML = `
-        <h3>Medicamento(s) próximo(s) aos dados informados:</h3>
-        <h4>Obs: Em ordem de aproximação (mais parecido para o menos parecido)</h4>
-        <li class="collapsible">Buscopan
+    });
+        <li class="collapsible">medicamentoKey
             <ul class="content">
-                <li>REGISTRO: 1781708900042,1781708900026,1781708900115,1781708900131</li>
-                <li>APRESENTAÇÃO:
-                    <ul>
-                        <li>20 MG SOL INJ CT 5 AMP VD TRANS X 1 ML</li>
-                        <li>10 MG/ML SOL GOT OR CT FR GOT VD AMB X 20 ML + SER DOS</li>
-                        <li>10 MG DRG CT BL AL PLAS PVC/PVDC OPC X 20</li>
-                        <li>10 MG/ML SOL GOT OR CT FR GOT VD AMB X 20 ML</li>
-                    </ul>
-                </li>
-                <li>BUTILBROMETO DE ESCOPOLAMINA: 10mg</li>
+                <li>apresentacaoList</li>
             </ul>
         </li>
     `;
     result.appendChild(resultList);
 
-    // Adicionar evento de colapso/expandir
     const collapsibleItems = document.querySelectorAll(".collapsible");
     for (let i = 0; i < collapsibleItems.length; i++) {
         collapsibleItems[i].addEventListener("click", function () {
@@ -112,11 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Redirecionar para a página inicial
-    const retornarButton = document.getElementById("retornar");
-    retornarButton.addEventListener("click", function () {
-        window.location.href = "/";
-    });
 });
 </script>
 </body>
